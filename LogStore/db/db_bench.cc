@@ -637,7 +637,15 @@ class Benchmark {
       } else if (name == Slice("sstables")) {
         PrintStats("leveldb.sstables");
       } else if (name == Slice("pause")) {
-        sleep(1 * 60 * 10); // 30 mins
+          int pause_time = 60; // in seconds
+          printf("Pausing for %d seconds", pause_time);
+          for (int i = 0; i < pause_time; ++i) {
+              sleep(1);
+              printf(".");
+              fflush(stdout);
+          }
+          printf(" Done! \n");
+          fflush(stdout);
       } else {
         if (name != Slice()) {  // No error message for empty name
           fprintf(stderr, "unknown benchmark '%s'\n", name.ToString().c_str());

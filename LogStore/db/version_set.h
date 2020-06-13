@@ -44,6 +44,9 @@ static double MaxBytesForLevel(int level) {
   // the level-0 compaction threshold based on number of files.
   double result = 10 * 1048576.0;  // Result for both level-0 and level-1
   if (level > 0 && level < config::kNumLevels - 1) {
+//      Should be half of the size of the DB
+// This controls the amount of data in level 1 for LogStore
+// For our experiments we use a DB of size 100GB
     result *= (50.4 * 100); // 50GB
     //result *= (20.4 * 100); // 20GB
     //result *= (10.4 * 100); // 10GB

@@ -190,7 +190,12 @@ void StaticHistogram::Merge(Histogram* other) {
 }
 
 uint64_t StaticHistogram::GetAverageBucketCount() {
-  return total_.load() / buckets_.size();
+    if (buckets_.size() > 0){
+        return total_.load() / buckets_.size();
+    }
+    else{
+        return 0;
+    }
 }
 
 uint64_t StaticHistogram::GetMedianBucketCount() {
