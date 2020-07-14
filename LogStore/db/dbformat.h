@@ -40,7 +40,11 @@ static const int kL0_StopWritesTrigger = 80;
 // the largest level since that can generate a lot of wasted disk
 // space if the same key space is being repeatedly overwritten.
 //    static const int kMaxMemCompactLevel = 2; // original value
-static const int kMaxMemCompactLevel = 0;
+#ifdef CFlagMaxMemCompactLevel1
+        static const int kMaxMemCompactLevel = 1;
+#else
+        static const int kMaxMemCompactLevel = 0;
+#endif
 
 // Approximate gap in bytes between samples of data read during iteration.
 static const int kReadBytesPeriod = 1048576;

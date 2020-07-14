@@ -80,7 +80,17 @@ struct IndexEntry {
 class HandleTable {
  public:
   HandleTable() : length_(0), elems_(0), list_(NULL) { Resize(); }
-  ~HandleTable() { delete[] list_; }
+  ~HandleTable() {
+      for (uint32_t i = 0; i < length_; i++) {
+          IndexEntry* h = list_[i];
+          while (h != NULL) {
+              IndexEntry* next = h->next_hash;
+              free(h);
+              h = next;
+          }
+      }
+      delete[] list_;
+  }
 
   IndexEntry* Lookup(const Slice& key, uint32_t hash) {
     return *FindPointer(key, hash);

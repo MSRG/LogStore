@@ -16,7 +16,7 @@ $ sudo lsblk
 ```
 
 Sample output:
-
+TBD
 
 Format using `ext4`:
 
@@ -58,10 +58,30 @@ Creat logstore directories
 $ mkdir -p /disks/ssd/logstore; mkdir -p /disks/data/logstore
 ```
 
+Creat leveldb directories
+```shell script
+$ mkdir -p /disks/ssd/leveldb; mkdir -p /disks/data/leveldb
+```
+
 
 ### Set up YCSB dependency
 
 Make sure dependencies are installed. Maven. 
 
+
+## Tutorial (Ubuntu 18.04)
+
+
+### Install dependencies
+
+```shell script
+$ sudo apt-get update; sudo apt install git make build-essential maven -y
+```
+
+# Build customized YCSB
+
+```shell script
+$ cd YCSB; mvn clean package
+``` 
 
 ## References

@@ -636,7 +636,7 @@ class PosixEnv : public Env {
       Fadvise(in_fd, 0, 0, POSIX_FADV_DONTNEED);
     } 
     if (!buffer_dest) {
-      Fadvise(out_fd, 0, 0, POSIX_FADV_DONTNEED); 
+      Fadvise(out_fd, 0, 0, POSIX_FADV_DONTNEED);
     }
     close(in_fd);
     close(out_fd);

@@ -3,12 +3,27 @@
 # found in the LICENSE file. See the AUTHORS file for names of contributors.
 
 #-----------------------------------------------
+# LogStore flags
+# -DCFlagDisable_AdjustHistogramPostCompaction : Used to solve a SegFault issue (use untill issue is resolved)
+# -DCFlagMaxMemCompactLevel1 : Allows for pushing memtable directly to L1 if no overlap is created
+# -DCFlagPrioritizeL0_Simple : A simple threashold-based approach to ensure that Writes are only delayed butnot blocked
+# -DCFlagSSD[10-40]PCT : Controls the % of SSD used for L0+L1, e.g., -DCFlagSSD40PCT allows 40GB to reside on SSD assuming DB Size = 100GB (see version_set.h)
+# -DPAUSE_PERIOD : Used to control the pause in Seconds
+# -DCFlagPregenZipfData : Use pre-generated Zipf data files
+
+#-----------------------------------------------
 # Uncomment exactly one of the lines labelled (A), (B), and (C) below
 # to switch between compilation modes.
+# Logstore Unoptimized
+#OPT ?= -O2 -DNDEBUG -DCFlagPregenZipfData -DCFlagDisable_AdjustHistogramPostCompaction -DCFlagMaxMemCompactLevel1 -DCFlagPrioritizeL0_Simple -DCFLAG_DisableInformedCompaction -DCFlagDisableReverseCompaction # (A) Production use (optimized mode)
 
-OPT ?= -O2 -DNDEBUG       # (A) Production use (optimized mode)
+# Losgtore with different SSD usage %
+OPT ?= -O2 -DNDEBUG -DCFlagPregenZipfData -DCFlagDisable_AdjustHistogramPostCompaction -DCFlagMaxMemCompactLevel1 -DCFlagPrioritizeL0_Simple -DCFlagSSD40PCT# (A) Production use (optimized mode)
+
+#OPT ?= -O2 -DNDEBUG # (A) Production use (optimized mode)
 #OPT ?= -g2                # (B) Debug mode, w/ full line-level debugging symbols
-# OPT ?= -O2 -g2 -DNDEBUG # (C) Profiling mode: opt, but w/debugging symbols
+#OPT ?= -g2 -DCFlag_SignalIfNoRemainingCompactions               # (B) Debug mode, w/ full line-level debugging symbols
+#OPT ?= -O2 -g2 -DNDEBUG # (C) Profiling mode: opt, but w/debugging symbols
 #-----------------------------------------------
 
 # detect what platform we're building on

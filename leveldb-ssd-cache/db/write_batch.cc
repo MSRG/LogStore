@@ -127,7 +127,9 @@ class MemTableInserter : public WriteBatch::Handler {
       cache_update = true;
     }
     uint64_t elapsed = env_->NowMicros() - start_time;
-    stat_->measureTime(cache_update ? SSD_CACHE_INSERT_MICROS : SSD_CACHE_CHECK_KEY_MICROS, elapsed);
+    if (stat_){
+        stat_->measureTime(cache_update ? SSD_CACHE_INSERT_MICROS : SSD_CACHE_CHECK_KEY_MICROS, elapsed);
+    }
     sequence_++;
   }
   virtual void Delete(const Slice& key) {

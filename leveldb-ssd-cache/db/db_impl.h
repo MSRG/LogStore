@@ -136,7 +136,7 @@ class DBImpl : public DB {
   TableCache* table_cache_;
 
   // SSD Cache, if one was provided
-  SsdCache* cache_;
+  SsdCache* ssd_cache_;
 
   // Lock over the persistent DB state.  Non-NULL iff successfully acquired.
   FileLock* db_lock_;

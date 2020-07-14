@@ -1,1 +1,4 @@
+.vscode
+cmake-build-debug
 .idea
+zipfdata

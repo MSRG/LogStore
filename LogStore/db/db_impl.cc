@@ -815,6 +815,7 @@ void DBImpl::BackgroundCompaction() {
         if (status.ok()) {
           wf->Close();
           status = env_->Copy(src_name, 0, dest_name, f->file_size, false, !to_ll);
+          delete wf; // TQ: NewWritableFile uses new, so we must delete here
         }
 #ifndef NDEBUG
         if (status.ok() && to_ll) {
@@ -836,9 +837,12 @@ void DBImpl::BackgroundCompaction() {
     if (status.ok()) {
       status = versions_->LogAndApply(c->edit(), &mutex_);
     }
+    // TQ: Don't adjust for now
+#ifndef CFlagDisable_AdjustHistogramPostCompaction
     if (status.ok()) {
       versions_->AdjustHistogramPostCompaction(c);
     }
+#endif
     if (!status.ok()) {
       RecordBackgroundError(status);
     }
@@ -846,9 +850,19 @@ void DBImpl::BackgroundCompaction() {
       DeleteObsoleteFiles();
     }
     VersionSet::LevelSummaryStorage tmp;
+#ifdef CFlagDisableReverseCompaction
+      assert(!(c->output_level() == 1 && c->level() == 2));
+#else
+      if (c->output_level() == 1 && c->level() == 2){
+          Log(options_.info_log, "Reverse compaction #%lld to #%lld\n",
+              static_cast<unsigned long long>(f->number),
+              static_cast<unsigned long long>(added_file_number));
+      }
+#endif
+
     Log(options_.info_log, "Moved #%lld to #%lld [%s-%s] on level-%d %lld bytes %s: %s\n",
         static_cast<unsigned long long>(f->number),
-        added_file_number,
+        static_cast<unsigned long long>(added_file_number),
         f->smallest.user_key().ToString().c_str(),
         f->largest.user_key().ToString().c_str(),
         c->output_level(),
@@ -1165,9 +1179,11 @@ Status DBImpl::DoCompactionWork(CompactionState* compact) {
   if (status.ok()) {
     status = InstallCompactionResults(compact);
   }
+#ifndef CFlagDisable_AdjustHistogramPostCompaction
   if (status.ok()) {
     versions_->AdjustHistogramPostCompaction(compact->compaction);
   }
+#endif
   if (!status.ok()) {
     RecordBackgroundError(status);
   }

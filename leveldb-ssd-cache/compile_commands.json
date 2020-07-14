@@ -1,0 +1,722 @@
+[
+ {
+  "directory": "/Users/qadahtm/Dev/LogStore/qadahtm-logstore/leveldb-ssd-cache",
+  "arguments": [
+   "c++",
+   "-I.",
+   "-I./include",
+   "-std=c++11",
+   "-DOS_MACOSX",
+   "-DLEVELDB_PLATFORM_POSIX",
+   "-O2",
+   "-DNDEBUG",
+   "-c",
+   "port/port_posix.cc",
+   "-o",
+   "port/port_posix.o"
+  ],
+  "file": "port/port_posix.cc"
+ },
+ {
+  "directory": "/Users/qadahtm/Dev/LogStore/qadahtm-logstore/leveldb-ssd-cache",
+  "arguments": [
+   "c++",
+   "-I.",
+   "-I./include",
+   "-std=c++11",
+   "-DOS_MACOSX",
+   "-DLEVELDB_PLATFORM_POSIX",
+   "-O2",
+   "-DNDEBUG",
+   "-c",
+   "db/builder.cc",
+   "-o",
+   "db/builder.o"
+  ],
+  "file": "db/builder.cc"
+ },
+ {
+  "directory": "/Users/qadahtm/Dev/LogStore/qadahtm-logstore/leveldb-ssd-cache",
+  "arguments": [
+   "c++",
+   "-I.",
+   "-I./include",
+   "-std=c++11",
+   "-DOS_MACOSX",
+   "-DLEVELDB_PLATFORM_POSIX",
+   "-O2",
+   "-DNDEBUG",
+   "-c",
+   "db/c.cc",
+   "-o",
+   "db/c.o"
+  ],
+  "file": "db/c.cc"
+ },
+ {
+  "directory": "/Users/qadahtm/Dev/LogStore/qadahtm-logstore/leveldb-ssd-cache",
+  "arguments": [
+   "c++",
+   "-I.",
+   "-I./include",
+   "-std=c++11",
+   "-DOS_MACOSX",
+   "-DLEVELDB_PLATFORM_POSIX",
+   "-O2",
+   "-DNDEBUG",
+   "-c",
+   "db/db_impl.cc",
+   "-o",
+   "db/db_impl.o"
+  ],
+  "file": "db/db_impl.cc"
+ },
+ {
+  "directory": "/Users/qadahtm/Dev/LogStore/qadahtm-logstore/leveldb-ssd-cache",
+  "arguments": [
+   "c++",
+   "-I.",
+   "-I./include",
+   "-std=c++11",
+   "-DOS_MACOSX",
+   "-DLEVELDB_PLATFORM_POSIX",
+   "-O2",
+   "-DNDEBUG",
+   "-c",
+   "db/db_iter.cc",
+   "-o",
+   "db/db_iter.o"
+  ],
+  "file": "db/db_iter.cc"
+ },
+ {
+  "directory": "/Users/qadahtm/Dev/LogStore/qadahtm-logstore/leveldb-ssd-cache",
+  "arguments": [
+   "c++",
+   "-I.",
+   "-I./include",
+   "-std=c++11",
+   "-DOS_MACOSX",
+   "-DLEVELDB_PLATFORM_POSIX",
+   "-O2",
+   "-DNDEBUG",
+   "-c",
+   "db/dbformat.cc",
+   "-o",
+   "db/dbformat.o"
+  ],
+  "file": "db/dbformat.cc"
+ },
+ {
+  "directory": "/Users/qadahtm/Dev/LogStore/qadahtm-logstore/leveldb-ssd-cache",
+  "arguments": [
+   "c++",
+   "-I.",
+   "-I./include",
+   "-std=c++11",
+   "-DOS_MACOSX",
+   "-DLEVELDB_PLATFORM_POSIX",
+   "-O2",
+   "-DNDEBUG",
+   "-c",
+   "db/filename.cc",
+   "-o",
+   "db/filename.o"
+  ],
+  "file": "db/filename.cc"
+ },
+ {
+  "directory": "/Users/qadahtm/Dev/LogStore/qadahtm-logstore/leveldb-ssd-cache",
+  "arguments": [
+   "c++",
+   "-I.",
+   "-I./include",
+   "-std=c++11",
+   "-DOS_MACOSX",
+   "-DLEVELDB_PLATFORM_POSIX",
+   "-O2",
+   "-DNDEBUG",
+   "-c",
+   "db/log_reader.cc",
+   "-o",
+   "db/log_reader.o"
+  ],
+  "file": "db/log_reader.cc"
+ },
+ {
+  "directory": "/Users/qadahtm/Dev/LogStore/qadahtm-logstore/leveldb-ssd-cache",
+  "arguments": [
+   "c++",
+   "-I.",
+   "-I./include",
+   "-std=c++11",
+   "-DOS_MACOSX",
+   "-DLEVELDB_PLATFORM_POSIX",
+   "-O2",
+   "-DNDEBUG",
+   "-c",
+   "db/log_writer.cc",
+   "-o",
+   "db/log_writer.o"
+  ],
+  "file": "db/log_writer.cc"
+ },
+ {
+  "directory": "/Users/qadahtm/Dev/LogStore/qadahtm-logstore/leveldb-ssd-cache",
+  "arguments": [
+   "c++",
+   "-I.",
+   "-I./include",
+   "-std=c++11",
+   "-DOS_MACOSX",
+   "-DLEVELDB_PLATFORM_POSIX",
+   "-O2",
+   "-DNDEBUG",
+   "-c",
+   "db/memtable.cc",
+   "-o",
+   "db/memtable.o"
+  ],
+  "file": "db/memtable.cc"
+ },
+ {
+  "directory": "/Users/qadahtm/Dev/LogStore/qadahtm-logstore/leveldb-ssd-cache",
+  "arguments": [
+   "c++",
+   "-I.",
+   "-I./include",
+   "-std=c++11",
+   "-DOS_MACOSX",
+   "-DLEVELDB_PLATFORM_POSIX",
+   "-O2",
+   "-DNDEBUG",
+   "-c",
+   "db/repair.cc",
+   "-o",
+   "db/repair.o"
+  ],
+  "file": "db/repair.cc"
+ },
+ {
+  "directory": "/Users/qadahtm/Dev/LogStore/qadahtm-logstore/leveldb-ssd-cache",
+  "arguments": [
+   "c++",
+   "-I.",
+   "-I./include",
+   "-std=c++11",
+   "-DOS_MACOSX",
+   "-DLEVELDB_PLATFORM_POSIX",
+   "-O2",
+   "-DNDEBUG",
+   "-c",
+   "db/table_cache.cc",
+   "-o",
+   "db/table_cache.o"
+  ],
+  "file": "db/table_cache.cc"
+ },
+ {
+  "directory": "/Users/qadahtm/Dev/LogStore/qadahtm-logstore/leveldb-ssd-cache",
+  "arguments": [
+   "c++",
+   "-I.",
+   "-I./include",
+   "-std=c++11",
+   "-DOS_MACOSX",
+   "-DLEVELDB_PLATFORM_POSIX",
+   "-O2",
+   "-DNDEBUG",
+   "-c",
+   "db/version_edit.cc",
+   "-o",
+   "db/version_edit.o"
+  ],
+  "file": "db/version_edit.cc"
+ },
+ {
+  "directory": "/Users/qadahtm/Dev/LogStore/qadahtm-logstore/leveldb-ssd-cache",
+  "arguments": [
+   "c++",
+   "-I.",
+   "-I./include",
+   "-std=c++11",
+   "-DOS_MACOSX",
+   "-DLEVELDB_PLATFORM_POSIX",
+   "-O2",
+   "-DNDEBUG",
+   "-c",
+   "db/version_set.cc",
+   "-o",
+   "db/version_set.o"
+  ],
+  "file": "db/version_set.cc"
+ },
+ {
+  "directory": "/Users/qadahtm/Dev/LogStore/qadahtm-logstore/leveldb-ssd-cache",
+  "arguments": [
+   "c++",
+   "-I.",
+   "-I./include",
+   "-std=c++11",
+   "-DOS_MACOSX",
+   "-DLEVELDB_PLATFORM_POSIX",
+   "-O2",
+   "-DNDEBUG",
+   "-c",
+   "db/write_batch.cc",
+   "-o",
+   "db/write_batch.o"
+  ],
+  "file": "db/write_batch.cc"
+ },
+ {
+  "directory": "/Users/qadahtm/Dev/LogStore/qadahtm-logstore/leveldb-ssd-cache",
+  "arguments": [
+   "c++",
+   "-I.",
+   "-I./include",
+   "-std=c++11",
+   "-DOS_MACOSX",
+   "-DLEVELDB_PLATFORM_POSIX",
+   "-O2",
+   "-DNDEBUG",
+   "-c",
+   "table/block.cc",
+   "-o",
+   "table/block.o"
+  ],
+  "file": "table/block.cc"
+ },
+ {
+  "directory": "/Users/qadahtm/Dev/LogStore/qadahtm-logstore/leveldb-ssd-cache",
+  "arguments": [
+   "c++",
+   "-I.",
+   "-I./include",
+   "-std=c++11",
+   "-DOS_MACOSX",
+   "-DLEVELDB_PLATFORM_POSIX",
+   "-O2",
+   "-DNDEBUG",
+   "-c",
+   "table/block_builder.cc",
+   "-o",
+   "table/block_builder.o"
+  ],
+  "file": "table/block_builder.cc"
+ },
+ {
+  "directory": "/Users/qadahtm/Dev/LogStore/qadahtm-logstore/leveldb-ssd-cache",
+  "arguments": [
+   "c++",
+   "-I.",
+   "-I./include",
+   "-std=c++11",
+   "-DOS_MACOSX",
+   "-DLEVELDB_PLATFORM_POSIX",
+   "-O2",
+   "-DNDEBUG",
+   "-c",
+   "table/filter_block.cc",
+   "-o",
+   "table/filter_block.o"
+  ],
+  "file": "table/filter_block.cc"
+ },
+ {
+  "directory": "/Users/qadahtm/Dev/LogStore/qadahtm-logstore/leveldb-ssd-cache",
+  "arguments": [
+   "c++",
+   "-I.",
+   "-I./include",
+   "-std=c++11",
+   "-DOS_MACOSX",
+   "-DLEVELDB_PLATFORM_POSIX",
+   "-O2",
+   "-DNDEBUG",
+   "-c",
+   "table/format.cc",
+   "-o",
+   "table/format.o"
+  ],
+  "file": "table/format.cc"
+ },
+ {
+  "directory": "/Users/qadahtm/Dev/LogStore/qadahtm-logstore/leveldb-ssd-cache",
+  "arguments": [
+   "c++",
+   "-I.",
+   "-I./include",
+   "-std=c++11",
+   "-DOS_MACOSX",
+   "-DLEVELDB_PLATFORM_POSIX",
+   "-O2",
+   "-DNDEBUG",
+   "-c",
+   "table/iterator.cc",
+   "-o",
+   "table/iterator.o"
+  ],
+  "file": "table/iterator.cc"
+ },
+ {
+  "directory": "/Users/qadahtm/Dev/LogStore/qadahtm-logstore/leveldb-ssd-cache",
+  "arguments": [
+   "c++",
+   "-I.",
+   "-I./include",
+   "-std=c++11",
+   "-DOS_MACOSX",
+   "-DLEVELDB_PLATFORM_POSIX",
+   "-O2",
+   "-DNDEBUG",
+   "-c",
+   "table/merger.cc",
+   "-o",
+   "table/merger.o"
+  ],
+  "file": "table/merger.cc"
+ },
+ {
+  "directory": "/Users/qadahtm/Dev/LogStore/qadahtm-logstore/leveldb-ssd-cache",
+  "arguments": [
+   "c++",
+   "-I.",
+   "-I./include",
+   "-std=c++11",
+   "-DOS_MACOSX",
+   "-DLEVELDB_PLATFORM_POSIX",
+   "-O2",
+   "-DNDEBUG",
+   "-c",
+   "table/table.cc",
+   "-o",
+   "table/table.o"
+  ],
+  "file": "table/table.cc"
+ },
+ {
+  "directory": "/Users/qadahtm/Dev/LogStore/qadahtm-logstore/leveldb-ssd-cache",
+  "arguments": [
+   "c++",
+   "-I.",
+   "-I./include",
+   "-std=c++11",
+   "-DOS_MACOSX",
+   "-DLEVELDB_PLATFORM_POSIX",
+   "-O2",
+   "-DNDEBUG",
+   "-c",
+   "table/table_builder.cc",
+   "-o",
+   "table/table_builder.o"
+  ],
+  "file": "table/table_builder.cc"
+ },
+ {
+  "directory": "/Users/qadahtm/Dev/LogStore/qadahtm-logstore/leveldb-ssd-cache",
+  "arguments": [
+   "c++",
+   "-I.",
+   "-I./include",
+   "-std=c++11",
+   "-DOS_MACOSX",
+   "-DLEVELDB_PLATFORM_POSIX",
+   "-O2",
+   "-DNDEBUG",
+   "-c",
+   "table/two_level_iterator.cc",
+   "-o",
+   "table/two_level_iterator.o"
+  ],
+  "file": "table/two_level_iterator.cc"
+ },
+ {
+  "directory": "/Users/qadahtm/Dev/LogStore/qadahtm-logstore/leveldb-ssd-cache",
+  "arguments": [
+   "c++",
+   "-I.",
+   "-I./include",
+   "-std=c++11",
+   "-DOS_MACOSX",
+   "-DLEVELDB_PLATFORM_POSIX",
+   "-O2",
+   "-DNDEBUG",
+   "-c",
+   "util/arena.cc",
+   "-o",
+   "util/arena.o"
+  ],
+  "file": "util/arena.cc"
+ },
+ {
+  "directory": "/Users/qadahtm/Dev/LogStore/qadahtm-logstore/leveldb-ssd-cache",
+  "arguments": [
+   "c++",
+   "-I.",
+   "-I./include",
+   "-std=c++11",
+   "-DOS_MACOSX",
+   "-DLEVELDB_PLATFORM_POSIX",
+   "-O2",
+   "-DNDEBUG",
+   "-c",
+   "util/bloom.cc",
+   "-o",
+   "util/bloom.o"
+  ],
+  "file": "util/bloom.cc"
+ },
+ {
+  "directory": "/Users/qadahtm/Dev/LogStore/qadahtm-logstore/leveldb-ssd-cache",
+  "arguments": [
+   "c++",
+   "-I.",
+   "-I./include",
+   "-std=c++11",
+   "-DOS_MACOSX",
+   "-DLEVELDB_PLATFORM_POSIX",
+   "-O2",
+   "-DNDEBUG",
+   "-c",
+   "util/cache.cc",
+   "-o",
+   "util/cache.o"
+  ],
+  "file": "util/cache.cc"
+ },
+ {
+  "directory": "/Users/qadahtm/Dev/LogStore/qadahtm-logstore/leveldb-ssd-cache",
+  "arguments": [
+   "c++",
+   "-I.",
+   "-I./include",
+   "-std=c++11",
+   "-DOS_MACOSX",
+   "-DLEVELDB_PLATFORM_POSIX",
+   "-O2",
+   "-DNDEBUG",
+   "-c",
+   "util/coding.cc",
+   "-o",
+   "util/coding.o"
+  ],
+  "file": "util/coding.cc"
+ },
+ {
+  "directory": "/Users/qadahtm/Dev/LogStore/qadahtm-logstore/leveldb-ssd-cache",
+  "arguments": [
+   "c++",
+   "-I.",
+   "-I./include",
+   "-std=c++11",
+   "-DOS_MACOSX",
+   "-DLEVELDB_PLATFORM_POSIX",
+   "-O2",
+   "-DNDEBUG",
+   "-c",
+   "util/comparator.cc",
+   "-o",
+   "util/comparator.o"
+  ],
+  "file": "util/comparator.cc"
+ },
+ {
+  "directory": "/Users/qadahtm/Dev/LogStore/qadahtm-logstore/leveldb-ssd-cache",
+  "arguments": [
+   "c++",
+   "-I.",
+   "-I./include",
+   "-std=c++11",
+   "-DOS_MACOSX",
+   "-DLEVELDB_PLATFORM_POSIX",
+   "-O2",
+   "-DNDEBUG",
+   "-c",
+   "util/crc32c.cc",
+   "-o",
+   "util/crc32c.o"
+  ],
+  "file": "util/crc32c.cc"
+ },
+ {
+  "directory": "/Users/qadahtm/Dev/LogStore/qadahtm-logstore/leveldb-ssd-cache",
+  "arguments": [
+   "c++",
+   "-I.",
+   "-I./include",
+   "-std=c++11",
+   "-DOS_MACOSX",
+   "-DLEVELDB_PLATFORM_POSIX",
+   "-O2",
+   "-DNDEBUG",
+   "-c",
+   "util/env.cc",
+   "-o",
+   "util/env.o"
+  ],
+  "file": "util/env.cc"
+ },
+ {
+  "directory": "/Users/qadahtm/Dev/LogStore/qadahtm-logstore/leveldb-ssd-cache",
+  "arguments": [
+   "c++",
+   "-I.",
+   "-I./include",
+   "-std=c++11",
+   "-DOS_MACOSX",
+   "-DLEVELDB_PLATFORM_POSIX",
+   "-O2",
+   "-DNDEBUG",
+   "-c",
+   "util/env_posix.cc",
+   "-o",
+   "util/env_posix.o"
+  ],
+  "file": "util/env_posix.cc"
+ },
+ {
+  "directory": "/Users/qadahtm/Dev/LogStore/qadahtm-logstore/leveldb-ssd-cache",
+  "arguments": [
+   "c++",
+   "-I.",
+   "-I./include",
+   "-std=c++11",
+   "-DOS_MACOSX",
+   "-DLEVELDB_PLATFORM_POSIX",
+   "-O2",
+   "-DNDEBUG",
+   "-c",
+   "util/filter_policy.cc",
+   "-o",
+   "util/filter_policy.o"
+  ],
+  "file": "util/filter_policy.cc"
+ },
+ {
+  "directory": "/Users/qadahtm/Dev/LogStore/qadahtm-logstore/leveldb-ssd-cache",
+  "arguments": [
+   "c++",
+   "-I.",
+   "-I./include",
+   "-std=c++11",
+   "-DOS_MACOSX",
+   "-DLEVELDB_PLATFORM_POSIX",
+   "-O2",
+   "-DNDEBUG",
+   "-c",
+   "util/hash.cc",
+   "-o",
+   "util/hash.o"
+  ],
+  "file": "util/hash.cc"
+ },
+ {
+  "directory": "/Users/qadahtm/Dev/LogStore/qadahtm-logstore/leveldb-ssd-cache",
+  "arguments": [
+   "c++",
+   "-I.",
+   "-I./include",
+   "-std=c++11",
+   "-DOS_MACOSX",
+   "-DLEVELDB_PLATFORM_POSIX",
+   "-O2",
+   "-DNDEBUG",
+   "-c",
+   "util/histogram.cc",
+   "-o",
+   "util/histogram.o"
+  ],
+  "file": "util/histogram.cc"
+ },
+ {
+  "directory": "/Users/qadahtm/Dev/LogStore/qadahtm-logstore/leveldb-ssd-cache",
+  "arguments": [
+   "c++",
+   "-I.",
+   "-I./include",
+   "-std=c++11",
+   "-DOS_MACOSX",
+   "-DLEVELDB_PLATFORM_POSIX",
+   "-O2",
+   "-DNDEBUG",
+   "-c",
+   "util/logging.cc",
+   "-o",
+   "util/logging.o"
+  ],
+  "file": "util/logging.cc"
+ },
+ {
+  "directory": "/Users/qadahtm/Dev/LogStore/qadahtm-logstore/leveldb-ssd-cache",
+  "arguments": [
+   "c++",
+   "-I.",
+   "-I./include",
+   "-std=c++11",
+   "-DOS_MACOSX",
+   "-DLEVELDB_PLATFORM_POSIX",
+   "-O2",
+   "-DNDEBUG",
+   "-c",
+   "util/options.cc",
+   "-o",
+   "util/options.o"
+  ],
+  "file": "util/options.cc"
+ },
+ {
+  "directory": "/Users/qadahtm/Dev/LogStore/qadahtm-logstore/leveldb-ssd-cache",
+  "arguments": [
+   "c++",
+   "-I.",
+   "-I./include",
+   "-std=c++11",
+   "-DOS_MACOSX",
+   "-DLEVELDB_PLATFORM_POSIX",
+   "-O2",
+   "-DNDEBUG",
+   "-c",
+   "util/ssd_cache.cc",
+   "-o",
+   "util/ssd_cache.o"
+  ],
+  "file": "util/ssd_cache.cc"
+ },
+ {
+  "directory": "/Users/qadahtm/Dev/LogStore/qadahtm-logstore/leveldb-ssd-cache",
+  "arguments": [
+   "c++",
+   "-I.",
+   "-I./include",
+   "-std=c++11",
+   "-DOS_MACOSX",
+   "-DLEVELDB_PLATFORM_POSIX",
+   "-O2",
+   "-DNDEBUG",
+   "-c",
+   "util/statistics.cc",
+   "-o",
+   "util/statistics.o"
+  ],
+  "file": "util/statistics.cc"
+ },
+ {
+  "directory": "/Users/qadahtm/Dev/LogStore/qadahtm-logstore/leveldb-ssd-cache",
+  "arguments": [
+   "c++",
+   "-I.",
+   "-I./include",
+   "-std=c++11",
+   "-DOS_MACOSX",
+   "-DLEVELDB_PLATFORM_POSIX",
+   "-O2",
+   "-DNDEBUG",
+   "-c",
+   "util/status.cc",
+   "-o",
+   "util/status.o"
+  ],
+  "file": "util/status.cc"
+ }
+]

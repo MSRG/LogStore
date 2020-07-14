@@ -418,9 +418,11 @@ Status Version::Get(const ReadOptions& options,
         case kNotFound:
           break;      // Keep searching in other files
         case kFound:
-          RecordTick(vset_->options_->statistics, LEVEL_0_HIT+level);
-          vset_->options_->statistics->measureTime(FILES_PROBED_PER_READ, files_probed);
-          vset_->options_->statistics->measureTime(NUM_LEVELS_PROBED_PER_READ, levels_probed);
+          if (vset_->options_->statistics){
+              RecordTick(vset_->options_->statistics, LEVEL_0_HIT+level);
+              vset_->options_->statistics->measureTime(FILES_PROBED_PER_READ, files_probed);
+              vset_->options_->statistics->measureTime(NUM_LEVELS_PROBED_PER_READ, levels_probed);
+          }
           return s;
         case kDeleted:
           s = Status::NotFound(Slice());  // Use empty error message for speed

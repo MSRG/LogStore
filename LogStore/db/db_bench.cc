@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <vector>
 #include <time.h>
 #include "db/db_impl.h"
 #include "db/version_set.h"
@@ -403,6 +404,9 @@ class Benchmark {
   time_t start_;
   std::vector<std::string> zipf_inputs;
 
+#ifdef CFlagPregenZipfData
+  int gen_zipf_counter;
+#endif
   void PrintHeader() {
     const int kKeySize = 16;
     PrintEnvironment();
@@ -425,7 +429,21 @@ class Benchmark {
     fprintf(stdout, "Zipf Skew:  %.2f\n", FLAGS_zipf_skew);
     fprintf(stdout, "Random On Open: %s\n", 
             FLAGS_advise_random_on_open ? "true" : "false");
-    fprintf(stdout, "Read \%:     %.4f\n", FLAGS_read_pct);
+    fprintf(stdout, "Read %%: %.4f\n", FLAGS_read_pct);
+#if defined(CFlagSSD10PCT) && !(defined(CFlagSSD20PCT) || defined(CFlagSSD30PCT) || defined(CFlagSSD40PCT))
+    fprintf(stdout, "LogStore - Data on SSD %%:     %d %%\n", 10);
+#elif defined(CFlagSSD20PCT) && !(defined(CFlagSSD10PCT) || defined(CFlagSSD30PCT) || defined(CFlagSSD40PCT))
+    fprintf(stdout, "LogStore - Data on SSD %%:     %d %%\n", 20);
+#elif defined(CFlagSSD30PCT) && !(defined(CFlagSSD10PCT) || defined(CFlagSSD20PCT) || defined(CFlagSSD40PCT))
+    fprintf(stdout, "LogStore - Data on SSD %%:     %d %%\n", 30);
+#elif defined(CFlagSSD40PCT) && !(defined(CFlagSSD10PCT) || defined(CFlagSSD30PCT) || defined(CFlagSSD20PCT))
+    fprintf(stdout, "LogStore - Data on SSD %%:  %d %%\n", 40);
+#else
+      // default 50% on SSD out 100 GB
+      // see "bench.sh" for DB size configuration
+      fprintf(stdout, "LogStore - Data on SSD %%:  %d %%\n", 50);
+#endif
+
     PrintWarnings();
     fprintf(stdout, "------------------------------------------------\n");
   }
@@ -499,6 +517,9 @@ class Benchmark {
     entries_per_batch_(1),
     reads_(FLAGS_reads < 0 ? FLAGS_num : FLAGS_reads),
     heap_counter_(0),
+#ifdef CFlagPregenZipfData
+    gen_zipf_counter(0),
+#endif
     start_(time(nullptr)) {
     std::vector<std::string> files;
     Env::Default()->GetChildren(FLAGS_db, &files);
@@ -637,15 +658,14 @@ class Benchmark {
       } else if (name == Slice("sstables")) {
         PrintStats("leveldb.sstables");
       } else if (name == Slice("pause")) {
-          int pause_time = 60; // in seconds
-          printf("Pausing for %d seconds", pause_time);
-          for (int i = 0; i < pause_time; ++i) {
-              sleep(1);
-              printf(".");
-              fflush(stdout);
-          }
-          printf(" Done! \n");
+          int pause_time = 1 * 60 * 10; // in seconds
+#ifdef PAUSE_PERIOD
+            pause_time = PAUSE_PERIOD;
+#endif
+          printf("Pausing for %d seconds\n", pause_time);
           fflush(stdout);
+          sleep(pause_time);
+
       } else {
         if (name != Slice()) {  // No error message for empty name
           fprintf(stderr, "unknown benchmark '%s'\n", name.ToString().c_str());
@@ -956,8 +976,8 @@ class Benchmark {
     std::string value;
     Status s;
     int found = 0;
-    //int num_warm = static_cast<int>(FLAGS_num * FLAGS_warm_ratio);
-    int num_warm = 8000000;
+    int num_warm = static_cast<int>(FLAGS_num * FLAGS_warm_ratio);
+//    int num_warm = 8000000;
     for (int i = num_warm; i >= 0; i--) {
       char key[100];
       snprintf(key, sizeof(key), "%016d", i);
@@ -1048,6 +1068,15 @@ class Benchmark {
   }
 
   void GenerateZipfInput() {
+      // Assume that the file already exists
+#ifdef CFlagPregenZipfData
+      char file_name[100];
+      gen_zipf_counter++;
+      snprintf(file_name, sizeof(file_name), "zipf-input-%d-pt9.dat", gen_zipf_counter);
+      std::string input(file_name);
+      zipf_inputs.push_back(input);
+      fprintf(stdout, "Assuming that Zipf Input %s exist\n", input.c_str());
+#else
     for (uint32_t i = 0; i < FLAGS_threads; i++) {
       std::string now_str = std::to_string(Env::Default()->NowMicros());
       std::string input = "zipf-input-" + now_str + ".dat";
@@ -1059,6 +1088,7 @@ class Benchmark {
       zipf_inputs.push_back(input);
       fprintf(stdout, "Generated Zipf Input %s\n", input.c_str());
     }
+#endif
   }
 
   void ReadZipfInput(ThreadState* thread) {
@@ -1119,6 +1149,9 @@ class Benchmark {
     std::unique_ptr<char[]> buf(new char[key_size*line_size*buf_keys]);
 
     bool done = false;
+    int j = 0;
+
+    // Stopping either when we scan the whole input file or the number of configured reads is reached
     while (!done) {
       // buffer up numbers
       ssize_t r = read(in_fd, buf.get(), buf_keys*line_size);
@@ -1136,6 +1169,11 @@ class Benchmark {
           found++;
         }
         thread->stats.FinishedSingleOp(db_);
+        j++;
+        if (j >= reads_){
+            done = true;
+            break;
+        }
       }
     }
     close(in_fd);
@@ -1172,6 +1210,7 @@ class Benchmark {
 
     // 3. Loop over keys in input file
     bool done = false;
+    int j = 0;
     while (!done) {
       // buffer up numbers
       ssize_t r = read(in_fd, buf.get(), buf_keys*line_size);
@@ -1192,6 +1231,10 @@ class Benchmark {
           exit(1);
         }
         thread->stats.FinishedSingleOp(db_);
+        j++;
+        if (j >= reads_){
+            done = true;
+        }
       }
     }
     close(in_fd);

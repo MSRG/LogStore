@@ -47,9 +47,20 @@ static double MaxBytesForLevel(int level) {
 //      Should be half of the size of the DB
 // This controls the amount of data in level 1 for LogStore
 // For our experiments we use a DB of size 100GB
-    result *= (50.4 * 100); // 50GB
-    //result *= (20.4 * 100); // 20GB
-    //result *= (10.4 * 100); // 10GB
+//    result *= (140.4 * 100); // for WO workload total is expected to be ~132GB with 16 runs
+#if defined(CFlagSSD10PCT) && !(defined(CFlagSSD20PCT) || defined(CFlagSSD30PCT) || defined(CFlagSSD40PCT))
+      result *= (10.4 * 100); // 10GB
+#elif defined(CFlagSSD20PCT) && !(defined(CFlagSSD10PCT) || defined(CFlagSSD30PCT) || defined(CFlagSSD40PCT))
+      result *= (20.4 * 100); // 20GB
+#elif defined(CFlagSSD30PCT) && !(defined(CFlagSSD10PCT) || defined(CFlagSSD20PCT) || defined(CFlagSSD40PCT))
+      result *= (30.4 * 100); // 30GB
+#elif defined(CFlagSSD40PCT) && !(defined(CFlagSSD10PCT) || defined(CFlagSSD30PCT) || defined(CFlagSSD20PCT))
+      result *= (40.4 * 100); // 40GB
+#else
+    // default 50% on SSD out 100 GB
+    // see "bench.sh" for DB size configuration
+    result *= (50.4 * 100); // 50GB 50% on SSD
+#endif
   } else {
     int l = 7;
     while (l > 1) {

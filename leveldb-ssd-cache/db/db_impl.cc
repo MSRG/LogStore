@@ -141,8 +141,8 @@ DBImpl::DBImpl(const Options& raw_options, const std::string& dbname)
   has_imm_.Release_Store(NULL);
 
   if (!options_.ssd_cache_dir.empty()) {
-    cache_ = NewSSDCache(options_.ssd_cache_dir, options_.ssd_cache_size);
-    //cache_ = nullptr;
+    ssd_cache_ = NewSSDCache(options_.ssd_cache_dir, options_.ssd_cache_size);
+    //ssd_cache_ = nullptr;
   }
 
   // Reserve ten files or so for other uses and give the rest to TableCache.
@@ -161,6 +161,8 @@ DBImpl::~DBImpl() {
     bg_cv_.Wait();
   }
   mutex_.Unlock();
+
+  delete ssd_cache_;
 
   if (db_lock_ != NULL) {
     env_->UnlockFile(db_lock_);
@@ -865,9 +867,11 @@ Status DBImpl::InstallCompactionResults(CompactionState* compact) {
 }
 
 Status DBImpl::DoCompactionWork(CompactionState* compact) {
-  statistics_->measureTime(NUM_FILES_IN_SINGLE_COMPACTION, 
-                           compact->compaction->num_input_files(0) +
-                             compact->compaction->num_input_files(1));
+  if (statistics_){
+    statistics_->measureTime(NUM_FILES_IN_SINGLE_COMPACTION,
+                   compact->compaction->num_input_files(0) +
+                   compact->compaction->num_input_files(1));
+  }
   const uint64_t start_micros = env_->NowMicros();
   int64_t imm_micros = 0;  // Micros spent doing imm_ compactions
 
@@ -1124,8 +1128,9 @@ Status DBImpl::Get(const ReadOptions& options,
   {
     mutex_.Unlock();
 
+    bool found_in_cache = false;
     // First look in the cache, if one exists
-    if (cache_ != nullptr) {
+    if (ssd_cache_ != nullptr) {
       struct Ctx {
         std::string* v;
         bool found;
@@ -1133,7 +1138,7 @@ Status DBImpl::Get(const ReadOptions& options,
       Ctx ctx { value, false };
       {
         StopWatch sw(env_, statistics_, SSD_CACHE_LOOKUP_MICROS);
-        cache_->Lookup(key, &ctx, [](void* arg, const Slice& k, const Slice& v) {
+        ssd_cache_->Lookup(key, &ctx, [](void* arg, const Slice& k, const Slice& v) {
           Ctx* c = (Ctx*)arg;
           c->found = true;
           c->v->assign(v.data(), v.size());
@@ -1141,38 +1146,43 @@ Status DBImpl::Get(const ReadOptions& options,
       }
       if (ctx.found) {
         RecordTick(statistics_, SSD_CACHE_HITS);
-        return s;
+        s = Status::OK();
+        found_in_cache = true;
       }
       RecordTick(statistics_, SSD_CACHE_MISSES);
     }
 
-    // First look in the memtable, then in the immutable memtable (if any).
-    LookupKey lkey(key, snapshot);
-    uint64_t start_time = env_->NowMicros();
-    if (mem->Get(lkey, value, &s)) {
-      // Done
-      RecordTick(statistics_, MEMTABLE_HIT);
-      statistics_->measureTime(MEMTABLE_GET_MICROS, env_->NowMicros() - start_time);
-    } else if (imm != NULL && imm->Get(lkey, value, &s)) {
-      // Done
-      RecordTick(statistics_, MEMTABLE_HIT);
-      statistics_->measureTime(IMM_MEMTABLE_GET_MICROS, env_->NowMicros() - start_time);
-    } else {
-      RecordTick(statistics_, MEMTABLE_MISS);
-      StopWatch sw(env_, statistics_, VERSION_SET_GET_MICROS);
-      s = current->Get(options, lkey, value, &stats);
-      have_stat_update = true;
+    if (!found_in_cache){
+        // First look in the memtable, then in the immutable memtable (if any).
+        LookupKey lkey(key, snapshot);
+        uint64_t start_time = env_->NowMicros();
+        if (mem->Get(lkey, value, &s)) {
+            // Done
+            RecordTick(statistics_, MEMTABLE_HIT);
+            statistics_->measureTime(MEMTABLE_GET_MICROS, env_->NowMicros() - start_time);
+        } else if (imm != NULL && imm->Get(lkey, value, &s)) {
+            // Done
+            RecordTick(statistics_, MEMTABLE_HIT);
+            statistics_->measureTime(IMM_MEMTABLE_GET_MICROS, env_->NowMicros() - start_time);
+        } else {
+            RecordTick(statistics_, MEMTABLE_MISS);
+            StopWatch sw(env_, statistics_, VERSION_SET_GET_MICROS);
+            s = current->Get(options, lkey, value, &stats);
+            have_stat_update = true;
+        }
     }
 
     uint64_t xx = env_->NowMicros();
     mutex_.Lock();
-    statistics_->measureTime(GET_LOCK_MICROS, env_->NowMicros()-xx);
+    if (statistics_){
+        statistics_->measureTime(GET_LOCK_MICROS, env_->NowMicros()-xx);
+    }
   }
 
   // Put in cache if we found it and it wasn't there initially
-  if (cache_ != nullptr && s.ok()) {
+  if (ssd_cache_ != nullptr && s.ok()) {
     StopWatch sw(env_, statistics_, SSD_CACHE_INSERT_ON_MISS_MICROS);
-    cache_->Insert(key, (void*)value->data(), value->size());
+    ssd_cache_->Insert(key, (void*)value->data(), value->size());
   }
 
   if (have_stat_update && current->UpdateStats(stats)) {
@@ -1274,7 +1284,7 @@ Status DBImpl::Write(const WriteOptions& options, WriteBatch* my_batch) {
       }
       if (status.ok()) {
         StopWatch sw(env_, statistics_, MEMTABLE_INSERT_MICROS);
-        status = WriteBatchInternal::InsertInto(updates, mem_, cache_, env_, statistics_);
+        status = WriteBatchInternal::InsertInto(updates, mem_, ssd_cache_, env_, statistics_);
       }
       mutex_.Lock();
       if (sync_error) {
@@ -1533,8 +1543,8 @@ Status DB::Open(const Options& options, const std::string& dbname,
   DBImpl* impl = new DBImpl(options, dbname);
 
   Status s;
-  if (impl->cache_ != nullptr) {
-    s = impl->cache_->Open();
+  if (impl->ssd_cache_ != nullptr) {
+    s = impl->ssd_cache_->Open();
   }
   impl->mutex_.Lock();
   VersionEdit edit;

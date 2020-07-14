@@ -20,6 +20,8 @@
 #include "util/logging.h"
 #include "util/statistics.h"
 #include "util/stop_watch.h"
+#include "dbformat.h"
+#include <cmath>
 
 namespace leveldb {
 
@@ -444,8 +446,12 @@ Status Version::Get(const ReadOptions& options,
         case kFound:
           stats->file_hit = f;
           stats->file_hit_level = level;
+          assert(vset_->options_ != 0);
+          assert(vset_->options_->statistics != 0);
           RecordTick(vset_->options_->statistics, TickerForLevel(level));
-          vset_->options_->statistics->measureTime(FILES_PROBED_PER_READ, files_probed);
+          if (vset_->options_->statistics){
+              vset_->options_->statistics->measureTime(FILES_PROBED_PER_READ, files_probed);
+          }
           if (level > 0) {
             histograms_[level-1]->AddCount(user_key, 1);
           }
@@ -464,7 +470,11 @@ Status Version::Get(const ReadOptions& options,
 }
 
 bool Version::UpdateStats(const GetStats& stats) {
-  if (stats.file_hit != nullptr && IsLastLevel(stats.file_hit_level) && file_to_compact_ == nullptr) {
+    bool enable_rev_compaction = true;
+#ifdef CFlagDisableReverseCompaction
+    enable_rev_compaction = false;
+#endif
+  if (enable_rev_compaction && stats.file_hit != nullptr && IsLastLevel(stats.file_hit_level) && file_to_compact_ == nullptr) {
     // hit on last-level
     int level = stats.file_hit_level;
     Histogram* prev_lvl_hist = histograms_[level-2];
@@ -482,9 +492,9 @@ bool Version::UpdateStats(const GetStats& stats) {
 #endif
       FileMetaData* to_compact = files_[level][idx];
       Log(vset_->options_->info_log, 
-          "Table #%llu@%d [%s-%s] with count %.1f selected for level promotion. "
-          "Level %d threshold = %.1f, level average = %llu\n", 
-          to_compact->number, level, 
+          "Table #%lu@%d [%s-%s] with count %.1f selected for level promotion. "
+          "Level %d threshold = %.1f, level average = %lu\n",
+          to_compact->number, level,
           to_compact->smallest.user_key().ToString().c_str(),
           to_compact->largest.user_key().ToString().c_str(),
           curr_max, level-1, prev_lvl_threshold, prev_avg);
@@ -1141,8 +1151,22 @@ void VersionSet::Finalize(Version* v) {
       // file size is small (perhaps because of a small write-buffer
       // setting, or very high compression ratios, or lots of
       // overwrites/deletions).
-      score = v->files_[level].size() /
-          static_cast<double>(config::kL0_CompactionTrigger);
+        score = v->files_[level].size() /
+                static_cast<double>(config::kL0_CompactionTrigger);
+#ifdef CFlagPrioritizeL0
+      // TQ: Give highest priority to L0 if L0 is full and writes to has stopped
+      if (v->files_[level].size() > 0){
+        double x = static_cast<double>(v->files_[level].size());
+        double slow_trig = static_cast<double>(config::kL0_SlowdownWritesTrigger);
+        score *= 20 * pow(1.09,(slow_trig-(slow_trig-x)));
+      }
+#else
+#ifdef CFlagPrioritizeL0_Simple
+        if (v->files_[level].size() >= config::kL0_SlowdownWritesTrigger){
+            score *= 10000;
+        }
+#endif
+#endif
     } else {
       // Compute the ratio of current size to size limit.
       const uint64_t level_bytes = TotalFileSize(v->files_[level]);
@@ -1398,6 +1422,22 @@ Compaction* VersionSet::PickCompaction() {
       Log(options_->info_log, "Level %d overlap score: %.2lf.", level, overlap_score);
     }
 #endif
+#ifdef CFLAG_DisableInformedCompaction
+    // Pick the first file that comes after compact_pointer_[level]
+    for (size_t i = 0; i < current_->files_[level].size(); i++) {
+      FileMetaData* f = current_->files_[level][i];
+      if (compact_pointer_[level].empty() ||
+          icmp_.Compare(f->largest.Encode(), compact_pointer_[level]) > 0) {
+        c->inputs_[0].push_back(f);
+        break;
+      }
+    }
+    if (c->inputs_[0].empty()) {
+      // Wrap-around to the beginning of the key space
+      c->inputs_[0].push_back(current_->files_[level][0]);
+    }
+
+#else
     if (level == 0) {
       // if first level, forgo histogram and do round-robin selection
       // and expand to as many inputs as possible.  This is because
@@ -1430,13 +1470,14 @@ Compaction* VersionSet::PickCompaction() {
 #endif
       auto to_compact = current_->files_[level][idx];
       Log(options_->info_log, 
-        "Table #%llu@%d [%s-%s] with count %llu will be demoted.",
+        "Table #%lu@%d [%s-%s] with count %lu will be demoted. FileSize = %lu",
         to_compact->number, level, 
         to_compact->smallest.user_key().ToString().c_str(),
         to_compact->largest.user_key().ToString().c_str(),
-        min_bucket);
+        min_bucket, to_compact->file_size);
       c->inputs_[0].push_back(to_compact);
     }
+#endif
   } else if (seek_compaction) {
     level = current_->file_to_compact_level_;
     c = new Compaction(level);
@@ -1480,7 +1521,7 @@ Compaction* VersionSet::PickCompaction() {
       current_->GetOverlappingInputs(c->output_level()+1, &smallest, &largest, &c->grandparents_);
 
       Log(options_->info_log,
-          "Transitioning to staging compaction on SSD: %llu@%d covering [%s-%s].",
+          "Transitioning to staging compaction on SSD: %d@%d covering [%s-%s].",
           c->num_input_files(0), c->level(), smallest.user_key().ToString().c_str(),
           largest.user_key().ToString().c_str());
     }

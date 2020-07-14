@@ -399,7 +399,9 @@ class Benchmark {
   int heap_counter_;
   time_t start_;
   std::vector<std::string> zipf_inputs;
-
+#ifdef CFlagPregenZipfData
+  int gen_zipf_counter;
+#endif
   void PrintHeader() {
     const int kKeySize = 16;
     PrintEnvironment();
@@ -494,6 +496,9 @@ class Benchmark {
     entries_per_batch_(1),
     reads_(FLAGS_reads < 0 ? FLAGS_num : FLAGS_reads),
     heap_counter_(0),
+#ifdef CFlagPregenZipfData
+    gen_zipf_counter(0),
+#endif
     start_(time(nullptr)) {
     std::vector<std::string> files;
     Env::Default()->GetChildren(FLAGS_db, &files);
@@ -635,7 +640,13 @@ class Benchmark {
       } else if (name == Slice("sstables")) {
         PrintStats("leveldb.sstables");
       } else if (name == Slice("pause")) {
-        sleep(1 * 60 * 30); // 30 mins
+        int pause_time = 1 * 60 * 10; // in seconds
+#ifdef PAUSE_PERIOD
+        pause_time = PAUSE_PERIOD;
+#endif
+        printf("Pausing for %d seconds\n", pause_time);
+        fflush(stdout);
+        sleep(pause_time);
       } else {
         if (name != Slice()) {  // No error message for empty name
           fprintf(stderr, "unknown benchmark '%s'\n", name.ToString().c_str());
@@ -830,7 +841,12 @@ class Benchmark {
     options.write_buffer_size = FLAGS_write_buffer_size;
     options.max_open_files = FLAGS_open_files;
     options.filter_policy = filter_policy_;
-    options.ssd_cache_dir = std::string(FLAGS_ssd_cache_dir);
+    if (FLAGS_ssd_cache_dir == NULL){
+        options.ssd_cache_dir = std::string("");
+    }
+    else {
+        options.ssd_cache_dir = std::string(FLAGS_ssd_cache_dir);
+    }
     options.ssd_cache_size = FLAGS_ssd_cache_size;
     Status s = DB::Open(options, FLAGS_db, &db_);
     if (!s.ok()) {
@@ -948,9 +964,9 @@ class Benchmark {
     std::string value;
     Status s;
     int found = 0;
-    //int num_warm = static_cast<int>(FLAGS_num * FLAGS_warm_ratio);
-    int num_warm = 10000000;
-    for (int i = 0; i < num_warm; i++) {
+    int num_warm = static_cast<int>(FLAGS_num * FLAGS_warm_ratio);
+//    int num_warm = 8000000; // This can result in Key not found
+    for (int i = num_warm; i >= 0; i--) {
       char key[100];
       snprintf(key, sizeof(key), "%016d", i);
       s = db_->Get(options, key, &value);
@@ -1040,6 +1056,15 @@ class Benchmark {
   }
 
   void GenerateZipfInput() {
+#ifdef CFlagPregenZipfData
+      // Assume that the file already exists
+      char file_name[100];
+      gen_zipf_counter++;
+      snprintf(file_name, sizeof(file_name), "zipf-input-%d-pt9.dat", gen_zipf_counter);
+      std::string input(file_name);
+      zipf_inputs.push_back(input);
+      fprintf(stdout, "Assuming that Zipf Input %s exist\n", input.c_str());
+#else
     for (uint32_t i = 0; i < FLAGS_threads; i++) {
       std::string now_str = std::to_string(Env::Default()->NowMicros());
       std::string input = "zipf-input-" + now_str + ".dat";
@@ -1051,6 +1076,7 @@ class Benchmark {
       zipf_inputs.push_back(input);
       fprintf(stdout, "Generated Zipf Input %s\n", input.c_str());
     }
+#endif
   }
 
   void ReadZipfInput(ThreadState* thread) {
@@ -1111,6 +1137,9 @@ class Benchmark {
     std::unique_ptr<char[]> buf(new char[key_size*line_size*buf_keys]);
 
     bool done = false;
+    int j = 0;
+
+    // Stopping either when we scan the whole input file or the number of configured reads is reached
     while (!done) {
       // buffer up numbers
       ssize_t r = read(in_fd, buf.get(), buf_keys*line_size);
@@ -1124,10 +1153,15 @@ class Benchmark {
       int num_keys = r / line_size;
       for (unsigned i = 0; i < num_keys; i++) {
         char* key = buf.get() + (i * line_size);
-        if (db_->Get(options, Slice(key, key_size), &value).ok()) {
+        if (db_->Get(leveldb::ReadOptions(), Slice(key, key_size), &value).ok()) {
           found++;
         }
         thread->stats.FinishedSingleOp(db_);
+        j++;
+        if (j >= reads_){
+            done = true;
+            break;
+        }
       }
     }
     close(in_fd);
@@ -1235,6 +1269,7 @@ class Benchmark {
 
     // 3. Loop over keys in input file
     bool done = false;
+    int j = 0;
     while (!done) {
       // buffer up numbers
       ssize_t r = read(in_fd, buf.get(), buf_keys*line_size);
@@ -1252,15 +1287,19 @@ class Benchmark {
         bool read = (thread->rand.Uniform(1000)+1) <= read_pct;
         Status s;
         if (read) {
-          s = db_->Get(read_options, Slice(key, key_size), &value);
+          s = db_->Get(leveldb::ReadOptions(), Slice(key, key_size), &value);
         } else {
           s = db_->Put(write_options_, Slice(key, key_size), gen.Generate(value_size_));
         }
-        if (!s.ok()) {
-          fprintf(stderr, "%s error: %s\n", read ? "get" : "write", s.ToString().c_str());
-          exit(1);
-        }
+//        if (!s.ok()) {
+//          fprintf(stderr, "%s error: %s\n", read ? "get" : "write", s.ToString().c_str());
+//          exit(1);
+//        }
         thread->stats.FinishedSingleOp(db_);
+        j++;
+        if (j >= num_keys){
+            done = true;
+        }
       }
     }
     close(in_fd);
