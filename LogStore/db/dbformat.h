@@ -21,17 +21,24 @@ namespace leveldb {
 namespace config {
 static const int kNumLevels = 3;
 
+
+#ifdef CFlagUseOriginalL0Triggers
 // Level-0 compaction is started when we hit this many files.
-//    static const int kL0_CompactionTrigger = 4; // original value
+static const int kL0_CompactionTrigger = 4; // original value
+// Soft limit on number of level-0 files.  We slow down writes at this point.
+static const int kL0_SlowdownWritesTrigger = 8; // original value
+// Maximum number of level-0 files.  We stop writes at this point.
+static const int kL0_StopWritesTrigger = 12; // original value
+#else
+// Level-0 compaction is started when we hit this many files.
 static const int kL0_CompactionTrigger = 20;
 
 // Soft limit on number of level-0 files.  We slow down writes at this point.
-//    static const int kL0_SlowdownWritesTrigger = 8; // original value
 static const int kL0_SlowdownWritesTrigger = 40;
 
 // Maximum number of level-0 files.  We stop writes at this point.
-//    static const int kL0_StopWritesTrigger = 12; // original value
 static const int kL0_StopWritesTrigger = 80;
+#endif
 
 // Maximum level to which a new compacted memtable is pushed if it
 // does not create overlap.  We try to push to level 2 to avoid the

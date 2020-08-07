@@ -1,6 +1,6 @@
 #!/bin/bash
 
-YCSB_HOME="/home/prashanth/LogStore/YCSB"
+YCSB_HOME=$(cd ../YCSB; pwd)
 YCSB_VERSION="0.1.4"
 
 if [ ! -d $YCSB_HOME ]; then

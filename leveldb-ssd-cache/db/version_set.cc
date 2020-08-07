@@ -38,6 +38,9 @@ static double MaxBytesForLevel(int level) {
   // Note: the result for level zero is not really used since we set
   // the level-0 compaction threshold based on number of files.
   double result = 10 * 1048576.0;  // Result for both level-0 and level-1
+#ifdef USE_3LEVELS
+  result *= 5000; // let L1 have 50GB
+#endif
   while (level > 1) {
     result *= 10;
     level--;

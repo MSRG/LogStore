@@ -16,11 +16,19 @@
 # to switch between compilation modes.
 # Logstore Unoptimized
 #OPT ?= -O2 -DNDEBUG -DCFlagPregenZipfData -DCFlagDisable_AdjustHistogramPostCompaction -DCFlagMaxMemCompactLevel1 -DCFlagPrioritizeL0_Simple -DCFLAG_DisableInformedCompaction -DCFlagDisableReverseCompaction # (A) Production use (optimized mode)
-
+# Writepath optimizations
+OPT ?= -O2 -DNDEBUG -DCFlagUseOriginalL0Triggers -DCFlagDisable_AdjustHistogramPostCompaction # (A) Production use (optimized mode)
 # Losgtore with different SSD usage %
-OPT ?= -O2 -DNDEBUG -DCFlagPregenZipfData -DCFlagDisable_AdjustHistogramPostCompaction -DCFlagMaxMemCompactLevel1 -DCFlagPrioritizeL0_Simple -DCFlagSSD40PCT# (A) Production use (optimized mode)
+#OPT ?= -O2 -DNDEBUG -DCFlagDisable_AdjustHistogramPostCompaction -DCFlagMaxMemCompactLevel1 -DCFlagPrioritizeL0_Simple -DCFlagSSD40PCT# (A) Production use (optimized mode)
 
-#OPT ?= -O2 -DNDEBUG # (A) Production use (optimized mode)
+# Default Compile command
+#OPT ?= -O2 -DNDEBUG -DCFlagPregenZipfData -DCFlagDisable_AdjustHistogramPostCompaction -DCFlagMaxMemCompactLevel1 -DCFlagPrioritizeL0_Simple # (A) Production use (optimized mode)
+#OPT ?= -O2 -DNDEBUG -DCFLagPregenZipfAvailableDataFiles -DCFlagDisable_AdjustHistogramPostCompaction -DCFlagMaxMemCompactLevel1 -DCFlagPrioritizeL0_Simple # (A) Production use (optimized mode)
+#OPT ?= -O2 -DNDEBUG -DCFlagDisable_AdjustHistogramPostCompaction -DCFlagMaxMemCompactLevel1 -DCFlagPrioritizeL0_Simple # (A) Production use (optimized mode)
+
+## For Timeseries and Rounds
+#OPT ?= -O2 -DNDEBUG -DCFlagMaxMemCompactLevel1 -DCFlagPrioritizeL0_Simple # (A) Production use (optimized mode)
+#OPT ?= -O2 -DNDEBUG -DPAUSE_PERIOD=10 -DCFLagPregenZipfAvailableDataFiles -DCFlagMaxMemCompactLevel1 -DCFlagPrioritizeL0_Simple # (A) Production use (optimized mode)
 #OPT ?= -g2                # (B) Debug mode, w/ full line-level debugging symbols
 #OPT ?= -g2 -DCFlag_SignalIfNoRemainingCompactions               # (B) Debug mode, w/ full line-level debugging symbols
 #OPT ?= -O2 -g2 -DNDEBUG # (C) Profiling mode: opt, but w/debugging symbols

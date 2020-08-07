@@ -11,6 +11,8 @@
 #include <unistd.h>
 #include <vector>
 #include <time.h>
+#include <dirent.h>
+#include <algorithm>
 #include "db/db_impl.h"
 #include "db/version_set.h"
 #include "leveldb/cache.h"
@@ -407,6 +409,10 @@ class Benchmark {
 #ifdef CFlagPregenZipfData
   int gen_zipf_counter;
 #endif
+#ifdef CFLagPregenZipfAvailableDataFiles
+  std::vector<std::string> zipf_filelist;
+  size_t filelist_ptr = 0;
+#endif
   void PrintHeader() {
     const int kKeySize = 16;
     PrintEnvironment();
@@ -626,6 +632,10 @@ class Benchmark {
         method = &Benchmark::WriteZipf;
       } else if (name == Slice("readwritezipf")) {
         method = &Benchmark::ReadWriteZipf;
+      } else if (name == Slice("ycsb")) {
+          method = &Benchmark::YCSBWorkload;
+      } else if (name == Slice("ycsbscan")) {
+          method = &Benchmark::YCSBWorkloadScan;
       } else if (name == Slice("readlatest")) {
         method = &Benchmark::ReadLatest;
       } else if (name == Slice("readrandomsmall")) {
@@ -658,14 +668,14 @@ class Benchmark {
       } else if (name == Slice("sstables")) {
         PrintStats("leveldb.sstables");
       } else if (name == Slice("pause")) {
-          int pause_time = 1 * 60 * 10; // in seconds
+        int pause_time = 1 * 60 * 10; // in seconds
 #ifdef PAUSE_PERIOD
-            pause_time = PAUSE_PERIOD;
+        pause_time = PAUSE_PERIOD;
 #endif
-          printf("Pausing for %d seconds\n", pause_time);
-          fflush(stdout);
-          sleep(pause_time);
-
+        printf("Pausing for %d seconds\n", pause_time);
+        fflush(stdout);
+        sleep(pause_time);
+        fprintf(stderr, "Resume after pausing for %d seconds\n", pause_time);
       } else {
         if (name != Slice()) {  // No error message for empty name
           fprintf(stderr, "unknown benchmark '%s'\n", name.ToString().c_str());
@@ -1077,6 +1087,48 @@ class Benchmark {
       zipf_inputs.push_back(input);
       fprintf(stdout, "Assuming that Zipf Input %s exist\n", input.c_str());
 #else
+
+#ifdef CFLagPregenZipfAvailableDataFiles
+      if (zipf_filelist.size() == 0){
+          filelist_ptr = 0;
+          DIR *dir;
+          struct dirent *ent;
+          if ((dir = opendir (".")) != NULL) {
+              /* print all the files and directories within directory */
+              while ((ent = readdir (dir)) != NULL) {
+                  std::string fname(ent->d_name);
+                  std::string ext(".dat");
+                  std::size_t pos = fname.find(ext);
+                  if (pos != std::string::npos){
+//                      printf("File: %s\n", fname.c_str());
+                      zipf_filelist.push_back(fname);
+                  }
+              }
+              closedir (dir);
+              std::sort(zipf_filelist.begin(), zipf_filelist.end());
+//              for(auto it = zipf_filelist.begin(); it != zipf_filelist.end(); ++it){
+//                 printf("%s\n", it->c_str());
+//              }
+
+          } else {
+              /* could not open directory */
+              fprintf(stdout, "Could not open directory!\n");
+              fprintf(stderr, "Could not open directory!\n");
+              exit(1);
+          }
+      }
+
+      if (zipf_filelist.size() == 0){
+          fprintf(stdout, "No data files available at current working directory!\n");
+          fprintf(stderr, "No data files available at current working directory!\n");
+          exit(1);
+      }
+      if (filelist_ptr + 1 > zipf_filelist.size()){
+          filelist_ptr = 0;
+      }
+      zipf_inputs.push_back(zipf_filelist[filelist_ptr]);
+      filelist_ptr++;
+#else
     for (uint32_t i = 0; i < FLAGS_threads; i++) {
       std::string now_str = std::to_string(Env::Default()->NowMicros());
       std::string input = "zipf-input-" + now_str + ".dat";
@@ -1088,7 +1140,8 @@ class Benchmark {
       zipf_inputs.push_back(input);
       fprintf(stdout, "Generated Zipf Input %s\n", input.c_str());
     }
-#endif
+#endif // #ifdef CFLagPregenZipfAvailableDataFiles
+#endif //#ifdef CFlagPregenZipfData
   }
 
   void ReadZipfInput(ThreadState* thread) {
@@ -1150,7 +1203,7 @@ class Benchmark {
 
     bool done = false;
     int j = 0;
-
+    fprintf(stderr, "Starting workload ...\n");
     // Stopping either when we scan the whole input file or the number of configured reads is reached
     while (!done) {
       // buffer up numbers
@@ -1180,6 +1233,7 @@ class Benchmark {
     char msg[100];
     snprintf(msg, sizeof(msg), "(%d of %d found)", found, num_);
     thread->stats.AddMessage(msg);
+    fprintf(stderr, "Workload done!\n");
   }
 
   void WriteZipf(ThreadState* thread) {
@@ -1234,6 +1288,7 @@ class Benchmark {
         j++;
         if (j >= reads_){
             done = true;
+            break;
         }
       }
     }
@@ -1285,6 +1340,7 @@ class Benchmark {
 
     // 3. Loop over keys in input file
     bool done = false;
+    int j = 0;
     while (!done) {
       // buffer up numbers
       ssize_t r = read(in_fd, buf.get(), buf_keys*line_size);
@@ -1311,16 +1367,202 @@ class Benchmark {
           exit(1);
         }
         thread->stats.FinishedSingleOp(db_);
+        j++;
+        if (j >= reads_){
+          done = true;
+          break;
+        }
       }
     }
     close(in_fd);
   }
+
+  /**
+   * Implementation of a YCSB worklod. Main difference from `ReadWriteZipf` is that
+   * we use READ-MODIFY-WRITE instead of blind WRITE as in `ReadWriteZipf`
+   *
+   * @param thread
+   */
+  void YCSBWorkload(ThreadState* thread) {
+            ReadOptions read_options;
+            std::string value;
+
+            // 1. Pick up and input file containing keys
+            std::string fname("n/a");
+            {
+                MutexLock l(&thread->shared->mu);
+                if (zipf_inputs.empty()) {
+                    fprintf(stderr, "No Zipf Input Available!\n");
+                    return;
+                }
+                fname = zipf_inputs.back();
+                zipf_inputs.pop_back();
+            }
+            fprintf(stdout, "%d: processing Zipf input %s for read/writes ...\n", thread->tid, fname.c_str());
+
+            // 2. Open the input file
+            int in_fd = open(fname.c_str(), O_RDONLY);
+            if (in_fd < 0) {
+                fprintf(stderr, "Error opening %s: %s\n", fname.c_str(), strerror(errno));
+                close(in_fd);
+                return;
+            }
+            int key_size = 16;
+            int line_size = key_size + 1;
+            int buf_keys = 100000; // 100K keys in buffer
+            std::unique_ptr<char[]> buf(new char[key_size*line_size*buf_keys]);
+
+            int read_pct = FLAGS_read_pct * 1000;
+            int write_pct = 1000 - read_pct;
+            fprintf(stderr, "Starting %d/%d read/write workload ...\n", read_pct, write_pct);
+
+            // 3. Loop over keys in input file
+            bool done = false;
+            int j = 0;
+            while (!done) {
+                // buffer up numbers
+                ssize_t r = read(in_fd, buf.get(), buf_keys*line_size);
+                if (r < 0) {
+                    fprintf(stderr, "Error reading %s: %s\n", fname.c_str(), strerror(errno));
+                    close(in_fd);
+                    return;
+                } else if (r == 0) {
+                    done = true;
+                }
+                int num_keys = r / line_size;
+                RandomGenerator gen;
+                for (unsigned i = 0; i < num_keys; i++) {
+                    char* key = buf.get() + (i * line_size);
+                    bool read_op = (thread->rand.Uniform(1000)+1) <= read_pct;
+                    Status s;
+                    if (read_op) {
+                        s = db_->Get(read_options, Slice(key, key_size), &value);
+                    } else {
+                        s = db_->Get(read_options, Slice(key, key_size), &value);
+                        char v_0 = value[0];
+                        v_0 = (v_0 + 1) % 127;
+                        value[0] = v_0;
+                        Slice new_value(value.c_str(), value_size_);
+                        s = db_->Put(write_options_, Slice(key, key_size), new_value);
+                    }
+                    if (!s.ok()) {
+                        fprintf(stderr, "%s error: %s\n", read ? "get" : "write", s.ToString().c_str());
+                        exit(1);
+                    }
+                    thread->stats.FinishedSingleOp(db_);
+                    j++;
+                    if (j >= reads_){
+                        done = true;
+                        break;
+                    }
+                }
+            }
+            close(in_fd);
+        }
+
+    /**
+    * Implementation of a workload based on specs Workload E involving record scans from YCSB paper.
+    * Here starting keys of scans comes from a Zipfian distribution and length of Scan is uniform in [1,100]
+    * @param thread
+    */
+  void YCSBWorkloadScan(ThreadState* thread) {
+            ReadOptions read_options;
+            std::string value;
+            double scan_pct = 950; // 95% Based on Cooper10 paper
+            int max_scan_length = 100; // Based on Cooper10 paper
+
+
+            // 1. Pick up and input file containing keys
+            std::string fname("n/a");
+            {
+                MutexLock l(&thread->shared->mu);
+                if (zipf_inputs.empty()) {
+                    fprintf(stderr, "No Zipf Input Available!\n");
+                    return;
+                }
+                fname = zipf_inputs.back();
+                zipf_inputs.pop_back();
+            }
+            fprintf(stdout, "%d: processing Zipf input %s for read/writes ...\n", thread->tid, fname.c_str());
+
+            // 2. Open the input file
+            int in_fd = open(fname.c_str(), O_RDONLY);
+            if (in_fd < 0) {
+                fprintf(stderr, "Error opening %s: %s\n", fname.c_str(), strerror(errno));
+                close(in_fd);
+                return;
+            }
+            int key_size = 16;
+            int line_size = key_size + 1;
+            int buf_keys = 100000; // 100K keys in buffer
+            std::unique_ptr<char[]> buf(new char[key_size*line_size*buf_keys]);
+
+            fprintf(stderr, "Starting %d/%d scan/insert workload ...\n",
+                    static_cast<int>(scan_pct), static_cast<int>(1000-scan_pct) );
+
+            // 3. Loop over keys in input file
+            bool done = false;
+            RandomGenerator gen;
+            int j = 0;
+            int k = num_;
+            while (!done) {
+                // buffer up numbers
+                ssize_t r = read(in_fd, buf.get(), buf_keys*line_size);
+                if (r < 0) {
+                    fprintf(stderr, "Error reading %s: %s\n", fname.c_str(), strerror(errno));
+                    close(in_fd);
+                    return;
+                } else if (r == 0) {
+                    done = true;
+                }
+                int num_keys = r / line_size;
+
+                for (unsigned i = 0; i < num_keys; i++) {
+                    char* key = buf.get() + (i * line_size);
+                    Status s;
+                    bool scan_op = (thread->rand.Uniform(1000)+1) <= scan_pct;
+                    int limit = thread->rand.Uniform(max_scan_length)+1;
+                    if (scan_op){
+                        leveldb::Iterator* it = db_->NewIterator(leveldb::ReadOptions());
+                        int scan_cnt = 0;
+                        for (it->Seek(Slice(key, key_size)); it->Valid() && scan_cnt < limit; it->Next()) {
+                            s = it->status();
+                            if (!s.ok()) {
+                                fprintf(stderr, "%s error: %s\n", "scan", s.ToString().c_str());
+                                exit(1);
+                            }
+                            scan_cnt++;
+                        }
+                        delete it;
+                    }
+                    else{
+                        k++;
+                        char ikey[100];
+                        snprintf(ikey, 100, "%016d", k);
+                        s = db_->Put(write_options_, Slice(ikey, key_size), gen.Generate(value_size_));
+                        if (!s.ok()) {
+                            fprintf(stderr, "%s error: %s\n", "write", s.ToString().c_str());
+                            exit(1);
+                        }
+                    }
+
+                    thread->stats.FinishedSingleOp(db_);
+                    j++;
+                    if (j >= reads_){
+                        done = true;
+                        break;
+                    }
+                }
+            }
+            close(in_fd);
+        }
   
   void ReadLatest(ThreadState* thread) {
     ReadOptions options;
     std::string value;
     ZipfianGenerator zipf(thread->rand, FLAGS_num);
     int found = 0;
+    fprintf(stderr, "Starting workload ...\n");
     for (int i = 0; i < reads_; i++) {
       char key[100];
       const int k = FLAGS_num - zipf.NextInt() - 1;
@@ -1333,6 +1575,7 @@ class Benchmark {
     char msg[100];
     snprintf(msg, sizeof(msg), "(%d of %d found)", found, num_);
     thread->stats.AddMessage(msg);
+    fprintf(stderr, "Workload done!\n");
   }
 
   void SeekRandom(ThreadState* thread) {

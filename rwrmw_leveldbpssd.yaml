@@ -1,0 +1,18 @@
+bench_name: "RWRMW"
+sut: "LevelDB-PSSD"
+trial_cnt: 5
+warmup_phase: "warmcache"
+bench_phase: "ycsb"
+num: 100000000
+reads: 2000000 # read_cnt
+threads: 1
+compression_ratio: 0.99
+value_size: 1024
+bloom_bits: 16
+open_files: 50000
+zipf_skew: 0.9
+warm_ratio: 0.45
+use_statistics: true
+read_pct: 0.5
+db: "/disks/data"
+stats_interval: 100000

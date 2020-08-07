@@ -541,6 +541,7 @@ bool Version::RecordReadSample(Slice internal_key) {
   };
 
   State state;
+  memset(&state, 0, sizeof(struct State));
   state.matches = 0;
   ForEachOverlapping(ikey.user_key, internal_key, &state, &State::Match);
 

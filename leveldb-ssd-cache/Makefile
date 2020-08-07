@@ -6,8 +6,10 @@
 # Uncomment exactly one of the lines labelled (A), (B), and (C) below
 # to switch between compilation modes.
 
-OPT ?= -O2 -DNDEBUG -DCFlagPregenZipfData    # (A) Production use (optimized mode)
+#OPT ?= -O2 -DNDEBUG -DCFlagPregenZipfData    # (A) Production use (optimized mode)
+#OPT ?= -O2 -DNDEBUG -DCFLagPregenZipfAvailableDataFiles    # (A) Production use (optimized mode)
 #OPT ?= -O2 -DNDEBUG       # (A) Production use (optimized mode)
+OPT ?= -O2 -DNDEBUG -DUSE_3LEVELS      # (A) Production use (optimized mode)
 # OPT ?= -g2              # (B) Debug mode, w/ full line-level debugging symbols
 # OPT ?= -O2 -g2 -DNDEBUG # (C) Profiling mode: opt, but w/debugging symbols
 #-----------------------------------------------

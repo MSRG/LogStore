@@ -19,7 +19,11 @@ namespace leveldb {
 // Grouping of constants.  We may want to make some of these
 // parameters set via options.
 namespace config {
+#ifndef USE_3LEVELS
 static const int kNumLevels = 7;
+#else
+static const int kNumLevels = 3;
+#endif
 
 // Level-0 compaction is started when we hit this many files.
 //(pmenon)static const int kL0_CompactionTrigger = 100;
