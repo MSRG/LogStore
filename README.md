@@ -1,5 +1,9 @@
 # Logstore Project
 
+## Publications
+1. (IEEE TKDE)[https://doi.org/10.1109/TKDE.2020.3027191]
+2. (ICDE TKDE Poster Track)[https://icde2021.gr/accepted-papers/]
+
 ## System Setup
 
 ### Google Cloud Setup
@@ -9,14 +13,11 @@
 Use the following link as a reference:
 [GC Add Disk Guide](https://cloud.google.com/compute/docs/disks/add-persistent-disk)
 
-Get the `DEVICE_ID` for the new disk. The new disk should be the SSD. 
+Get the `DEVICE_ID` for the new disk. The new disk should be the SSD. Using the following command.
 
 ```shell script
 $ sudo lsblk
 ```
-
-Sample output:
-TBD
 
 Format using `ext4`:
 
@@ -64,13 +65,17 @@ $ mkdir -p /disks/ssd/leveldb; mkdir -p /disks/data/leveldb
 ```
 
 
-### Set up YCSB dependency
-
-Make sure dependencies are installed. Maven. 
-
-
 ## Tutorial (Ubuntu 18.04)
 
+### Set up YCSB dependency
+
+Make sure dependencies are installed. e.g., Maven.
+To use the Python scripts, make sure to install the dependencies using `requirements.txt`.
+We recommend using VirutalEnv to manage your Python environment.
+
+```shell
+$ pip install -r requirements.txt
+```
 
 ### Install dependencies
 
@@ -80,8 +85,12 @@ $ sudo apt-get update; sudo apt install git make build-essential maven -y
 
 # Build customized YCSB
 
+Unzip the `YCSB.zip` file. Then, use the following command. 
+
 ```shell script
 $ cd YCSB; mvn clean package
 ``` 
 
 ## References
+1. (YCSB Github)[https://github.com/brianfrankcooper/YCSB/]
+2. (LevelDB Github)[https://github.com/google/leveldb]
