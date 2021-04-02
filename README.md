@@ -2,7 +2,7 @@
 
 ## Publications
 1. [IEEE TKDE](https://doi.org/10.1109/TKDE.2020.3027191)
-2. [ICDE TKDE Poster Track](https://icde2021.gr/accepted-papers/)
+2. [ICDE 2021 - TKDE Poster Track](https://icde2021.gr/accepted-papers/)
 
 ## System Setup
 
@@ -83,13 +83,16 @@ $ pip install -r requirements.txt
 $ sudo apt-get update; sudo apt install git make build-essential maven -y
 ```
 
-# Build customized YCSB
+## Build customized YCSB
 
 Unzip the `YCSB.zip` file. Then, use the following command. 
 
 ```shell script
 $ cd YCSB; mvn clean package
 ``` 
+
+## Running Experiments
+TBD
 
 ## References
 1. [YCSB Github](https://github.com/brianfrankcooper/YCSB/)
