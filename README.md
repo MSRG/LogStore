@@ -1,8 +1,8 @@
 # Logstore Project
 
 ## Publications
-1. (IEEE TKDE)[https://doi.org/10.1109/TKDE.2020.3027191]
-2. (ICDE TKDE Poster Track)[https://icde2021.gr/accepted-papers/]
+1. [IEEE TKDE](https://doi.org/10.1109/TKDE.2020.3027191)
+2. [ICDE TKDE Poster Track](https://icde2021.gr/accepted-papers/)
 
 ## System Setup
 
@@ -92,5 +92,5 @@ $ cd YCSB; mvn clean package
 ``` 
 
 ## References
-1. (YCSB Github)[https://github.com/brianfrankcooper/YCSB/]
-2. (LevelDB Github)[https://github.com/google/leveldb]
+1. [YCSB Github](https://github.com/brianfrankcooper/YCSB/)
+2. [LevelDB Github](https://github.com/google/leveldb)
