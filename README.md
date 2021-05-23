@@ -4,6 +4,8 @@
 1. [IEEE TKDE](https://doi.org/10.1109/TKDE.2020.3027191)
 2. [ICDE 2021 - TKDE Poster Track](https://icde2021.gr/accepted-papers/)
 
+LogStore: A Workload-aware, Adaptable Key-Value Store on Hybrid Storage Systems. Prashanth Menon; Thamir Qadah; Tilmann Rabl; Mohammad Sadoghi; Hans-Arno Jacobsen. IEEE Transactions on Knowledge and Data Engineering. 28 September 2020
+
 ## System Setup
 
 ### Google Cloud Setup
